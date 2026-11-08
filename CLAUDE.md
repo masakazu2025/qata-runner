@@ -18,3 +18,4 @@ qata の runner です。Windows 上で操作（キー・タップ・文字の�
 @../qata/.claude/rules/general/parent-and-children.md
 @../qata/.claude/rules/general/rules-and-skills.md
 @../qata/.claude/rules/qata/repos-and-contracts.md
+@../qata/.claude/rules/qata/knowledge.md
