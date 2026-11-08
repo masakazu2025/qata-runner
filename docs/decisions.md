@@ -4,6 +4,22 @@
 
 ---
 
+## R3. 本物の操作（pywinauto）
+
+- 決めた人：AI　レビュー：未（人のレビューは要らない。PoC が終わったときにまとめて振り返る、親の D25）
+- 本物の操作は `windows.py` の `WindowsOperator`。偽物と同じ `run(command) -> result` を持ち、`main.py` で `QATA_RUNNER_OPERATOR`（`fake`・`windows`）から選ぶ。既定は偽物のまま。web の端から端までのテストが既定で runner を立ち上げているので、切り替えは親の段取りの 1c でする。
+- pywinauto は Windows でしか入らないので、依存に `sys_platform == 'win32'` を付け、`main.py` では `windows` を選んだときだけ読み込む。
+- 実行の流れ：同じタイトルのウィンドウを閉じる → `launch.command` を起動 → タイトルの完全一致で UI Automation のウィンドウを待つ（既定 15 秒）→ 大きさがあれば `MoveWindow` でそろえる → 前に出す → ステップを順に。ウィンドウはタイトルで探す（電卓は起動したプロセスと別のプロセスで窓を持つので、プロセスでは探せない）。
+- 大きさをそろえたあとに測り、命令と違えば `window_size_mismatch` で止める。座標がその大きさを前提にしているので、ずれたまま押すより止めるほうがよい。電卓は 336 x 509 より小さくできず、契約の例の 320 x 500 はここで止まる。
+- 座標とスクショは物理ピクセルにそろえる（プロセスを Per Monitor の DPI 対応にする）。タップの座標の原点は、契約どおり外枠（`GetWindowRect`）の左上。
+- スクショ（`window`）は、外枠ではなく DWM の見えている範囲で撮る。外枠には見えない縁（数ピクセル）があり、後ろの別のウィンドウが写り込むため。そのぶん、スクショの左上はタップの原点と数ピクセルずれる。
+- 操作のあと 0.3 秒待ってから撮る（画面の書き換えを待つ）。
+- キーは pywinauto の `send_keys` の書き方に変える。名前付きのキーは `{ENTER}` などに、`+ ^ % ~ ( ) { } [ ]` は `{}` で囲む。
+- つまずいたときの `error.code`：`launch_failed`・`window_not_found`・`window_size_mismatch`（ステップは空）、`key_failed`・`tap_failed`・`element_not_found`・`screenshot_failed`（そのステップを error にして止める）。
+- 実行のあと、ウィンドウは閉じずに残す。次の実行の始めに閉じる。人が最後の状態を見られるようにするため。
+- 関門：`tests/windows/windows.feature` で、REST の入口から本物の電卓を動かす（キー・タップ・すべての画面・三つの止まり方）。電卓は前に使ったモード（標準・関数電卓）で開くので、テストのタップの座標は UI Automation でボタンを探して決める。CI にはデスクトップがないので `QATA_RUNNER_NO_DESKTOP` で飛ばし、手元で回す。キーの書き換えは CI でも回す。
+- テストで共通の手順（応答・契約・completed）は `tests/conftest.py` に移した。
+
 ## R2. 偽の操作と入口
 
 - 決めた人：AI　レビュー：未（人のレビューは要らない。PoC が終わったときにまとめて振り返る、親の D25）

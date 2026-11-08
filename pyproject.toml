@@ -11,6 +11,7 @@ dependencies = [
     "jsonschema>=4.26.0",
     "pillow>=13.0.0",
     "pydantic>=2.14.3",
+    "pywinauto>=0.6.9; sys_platform == 'win32'",
     "referencing>=0.37.0",
     "rfc3339-validator>=0.1.4",
     "uvicorn>=0.54.0",
@@ -39,11 +40,11 @@ qata-runner = "qata_runner.main:serve"
 root_package = "qata_runner"
 
 [[tool.importlinter.contracts]]
-name = "依存は上から下へ：組み立て → 入口（REST）・偽の操作 → 契約の判定・契約の型"
+name = "依存は上から下へ：組み立て → 入口（REST）・偽の操作・本物の操作 → 契約の判定・契約の型"
 type = "layers"
 layers = [
     "qata_runner.main",
-    "qata_runner.rest | qata_runner.fake",
+    "qata_runner.rest | qata_runner.fake | qata_runner.windows",
     "qata_runner.contract_check | qata_runner.contracts",
 ]
 

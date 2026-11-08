@@ -13,6 +13,8 @@ jobs:
     runs-on: windows-latest  # runner は Windows で動く
     env:
       QATA_PARENT_DIR: ${{ github.workspace }}/parent
+      # CI にはデスクトップがないので、本物のアプリを動かすテスト（tests/windows/windows.feature）は飛ばす
+      QATA_RUNNER_NO_DESKTOP: "1"
     defaults:
       run:
         working-directory: qata-runner

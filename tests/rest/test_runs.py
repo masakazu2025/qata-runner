@@ -18,18 +18,12 @@ from PIL import Image
 from pytest_bdd import given, parsers, scenarios, then, when
 from support import load_example, walk_to_parent
 
-from qata_runner.contract_check import problems
 from qata_runner.fake import FakeOperator
 from qata_runner.rest import create_app
 
 scenarios("runs.feature")
 
 REMOVE = "（消す）"
-
-
-@pytest.fixture
-def context() -> dict:
-    return {}
 
 
 @given("偽の操作で立ち上げた runner", target_fixture="client")
@@ -77,41 +71,9 @@ def send_body(context: dict, client: TestClient, body: str) -> None:
     )
 
 
-@then(parsers.parse("応答は {status:d}"))
-def status_is(context: dict, status: int) -> None:
-    response = context["response"]
-    assert response.status_code == status, response.text
-
-
-@then(parsers.parse('応答は {status:d} で、code は "{code}"'))
-def error_is(context: dict, status: int, code: str) -> None:
-    response = context["response"]
-    assert response.status_code == status, response.text
-    body = response.json()
-    assert body["code"] == code
-    assert body["message"]
-    # 形は契約の共通の部品 error（code・message）にそろえる
-    assert set(body) == {"code", "message"}
-
-
-@then(parsers.parse('結果は契約 "{file_name}" に通る'))
-def result_passes(context: dict, file_name: str) -> None:
-    assert problems(file_name, context["response"].json()) == []
-
-
 @then("結果の run_id は命令と同じ")
 def run_id_matches(context: dict) -> None:
     assert context["response"].json()["run_id"] == context["command"]["run_id"]
-
-
-@then("結果は completed で、命令のステップがすべて 0 から順に ok で並ぶ")
-def all_steps_ok(context: dict) -> None:
-    result = context["response"].json()
-    assert result["status"] == "completed"
-    assert [s["index"] for s in result["steps"]] == list(
-        range(len(context["command"]["steps"]))
-    )
-    assert all(s["status"] == "ok" for s in result["steps"])
 
 
 @then("開始の時刻は終わりの時刻より後でない")
