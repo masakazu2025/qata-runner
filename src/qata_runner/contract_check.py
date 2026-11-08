@@ -5,6 +5,7 @@
 """
 
 import json
+import os
 from functools import cache
 from pathlib import Path
 from typing import Any
@@ -13,8 +14,12 @@ from jsonschema import Draft202012Validator, FormatChecker
 from referencing import Registry, Resource
 from referencing.jsonschema import DRAFT202012
 
-# 親の契約。作業フォルダで隣に並べた ../qata/ から読む（R1）。
-SCHEMAS_DIR = Path(__file__).resolve().parents[3] / "qata" / "contracts" / "schemas"
+# 親の契約。環境変数 QATA_PARENT_DIR が親のリポジトリを指していれば、そこから読む。
+# 指していなければ、作業フォルダで隣に並べた ../qata/ から読む（R1）。
+PARENT_DIR = Path(
+    os.environ.get("QATA_PARENT_DIR") or Path(__file__).resolve().parents[3] / "qata"
+)
+SCHEMAS_DIR = PARENT_DIR / "contracts" / "schemas"
 
 
 @cache
